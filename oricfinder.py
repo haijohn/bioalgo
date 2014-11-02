@@ -7,7 +7,7 @@ https://class.coursera.org/bioinformatics-002
 
 Unit1:  1. WHERE IN THE GENOME DOES DNA REPLICATION BEGIN?
 
-find the oriC of bacteria genome
+find the replicate origin of a bacteria genome
 
 """
 
@@ -109,7 +109,7 @@ def frequent_words_by_sort(text, k):
     return frequent_patterns
 
 ## find most frequent words by hashing
-def frequent_patterns_by_hash(text, k):
+def frequent_words_by_hash(text, k):
     pattern_count_hash = defaultdict(int)
     frequent_patterns = set([])
     for i in range(len(text)-k+1):
@@ -122,7 +122,7 @@ def frequent_patterns_by_hash(text, k):
     return frequent_patterns
      
 
-def frequent_patterns_by_hash_thre(text, k, t):
+def frequent_words_by_hash_thre(text, k, t):
     """t is the cutoff """
     pattern_count_hash = defaultdict(int)
     frequent_patterns = set([])
@@ -153,7 +153,7 @@ def find_clump(genome, l, k, t):
     genome_len = len(genome)
     for i in range(genome_len-l+1):
         window = genome[i:i+l]
-        patterns = frequent_patterns_by_hash_thre(window, k, t)
+        patterns = frequent_words_by_hash_thre(window, k, t)
         clump_kmers |= patterns
     return clump_kmers
 
@@ -188,4 +188,76 @@ def reverse_complement(pattern):
 ## get hamming distance of two string
 def hamming_distance(s1, s2):
     return sum(ch1!=ch2 for ch1,ch2 in zip(s1,s2))
+
+def approximate_pattern_match(pattern, text, d):
+    """Find all approximate occurrences of a pattern in a string.
+       Input: Strings Pattern and Text along with an integer d.
+       Output: All starting positions where Pattern appears as 
+               a substring of Text with at most d mismatches."""
+    positions = []
+    len_pattern = len(pattern)
+    len_text = len(text)
+    for i in range(len_text-len_pattern+1):
+        if hamming_distance(pattern, text[i:i+len_pattern]) <= d:
+            positions.append(i)
+    return positions
+    
+def approximate_pattern_count(text, pattern, d):
+    return len(approximate_pattern_match(pattern, text, d))
+
+
+
+
+def immediate_neighbors(pattern):
+    """generate the 1-neigborhood of Pattern"""
+    neighbors = set([pattern])
+    for i in range(len(pattern)):
+        current = pattern[i]
+        before = pattern[:i]
+        after = pattern[i+1:]
+        for m in "ATCG":
+            if m != current:
+				neighbor = "".join([before,m,after])
+				neighbors.add(neighbor)	
+    return neighbors
+
+def iterative_neighbors(pattern, d):
+    neighbors = set([pattern])
+    for i in range(d):
+        neighs = neighbors.copy()
+        for pat in neighs:
+            neighbors.update(immediate_neighbors(pat))
+    return neighbors
+
+def recursive_neighbors(pattern, d):
+    pass
+
+def frequent_words_with_mismatch_rc(text, k, d):
+    """Find the most frequent k-mers with mismatches in a string.
+       Input: A string Text as well as integers k and d. (You may assume k ≤ 12 and d ≤ 3.)
+       Output: All most frequent k-mers with up to d mismatches in T"""
+    frequent_patterns = set()
+    close_array = [0 for i in range(4**k)]
+    frequent_array = [0 for i in range(4**k)]
+    for i in range(len(text)-k+1):
+        pattern = text[i:i+k]
+        neighbors = iterative_neighbors(pattern, d)
+        for neighbor in neighbors:
+            close_array[pattern_to_number(neighbor)] = 1
+    for i in range(4**k):
+        if close_array[i] == 1:
+            pattern = number_to_pattern(i, k)
+            frequent_array[i] = approximate_pattern_count(text, pattern, d) + \
+                                approximate_pattern_count(text, 
+                                                          reverse_complement(pattern), d)
+    max_count = max(frequent_array)
+    for i in range(4**k):
+        if frequent_array[i] == max_count:
+            pattern = number_to_pattern(i, k)
+            frequent_patterns.add(pattern)
+    return frequent_patterns
+
+
+def frequent_words_with_mismatch_by_sort(text, k):
+    pass
 
