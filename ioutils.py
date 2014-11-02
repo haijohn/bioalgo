@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-io utils function
+io utils function for read dataset and write result
 """
 from __future__ import print_function
 
@@ -23,6 +23,12 @@ def write_result(filename, content, sep=" "):
         f = open(filename, "w")
     else:
         f = filename
-    print(" ".join([str(c) if not isinstance(c,str) else c for c in content]), 
-          file=f)
+    try:
+        content = iter(content)
+    except TypeError:
+        print(content, file=f)
+    else:
+    	print(sep.join(str(c) if not isinstance(c,str) else c for c \
+                        in content), file=f)
+    f.close()
 
