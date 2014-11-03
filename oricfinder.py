@@ -217,8 +217,8 @@ def immediate_neighbors(pattern):
         after = pattern[i+1:]
         for m in "ATCG":
             if m != current:
-				neighbor = "".join([before,m,after])
-				neighbors.add(neighbor)	
+                neighbor = "".join([before,m,after])
+                neighbors.add(neighbor)	
     return neighbors
 
 def iterative_neighbors(pattern, d):
