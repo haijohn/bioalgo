@@ -97,4 +97,24 @@ rna_codon_table = {'AAA': 'K',
                    'UUG': 'L',
                    'UUU': 'F'}
 
-rna_codon_reverse = {'A': ['GCA', 'GCG', 'GCC', 'GCU'], '': ['UGA', 'UAA', 'UAG'], 'C': ['UGU', 'UGC'], 'E': ['GAA', 'GAG'], 'D': ['GAC', 'GAU'], 'G': ['GGU', 'GGG', 'GGA', 'GGC'], 'F': ['UUU', 'UUC'], 'I': ['AUA', 'AUC', 'AUU'], 'H': ['CAC', 'CAU'], 'K': ['AAG', 'AAA'], 'M': ['AUG'], 'L': ['CUU', 'CUG', 'CUA', 'CUC', 'UUG', 'UUA'], 'N': ['AAC', 'AAU'], 'Q': ['CAG', 'CAA'], 'P': ['CCC', 'CCA', 'CCU', 'CCG'], 'S': ['AGC', 'AGU', 'UCU', 'UCG', 'UCC', 'UCA'], 'R': ['AGG', 'AGA', 'CGA', 'CGC', 'CGG', 'CGU'], 'T': ['ACC', 'ACA', 'ACU', 'ACG'], 'W': ['UGG'], 'V': ['GUU', 'GUC', 'GUG', 'GUA'], 'Y': ['UAU', 'UAC']}
+integer_mass_table = {'A': '71',
+                      'C': '103',
+                      'D': '115',
+                      'E': '129',
+                      'F': '147',
+                      'G': '57',
+                      'H': '137',
+                      'I': '113',
+                      'K': '128',
+                      'L': '113',
+                      'M': '131',
+                      'N': '114',
+                      'P': '97',
+                      'Q': '128',
+                      'R': '156',
+                      'S': '87',
+                      'T': '101',
+                      'V': '99',
+                      'W': '186',
+                      'Y': '163'}
+
