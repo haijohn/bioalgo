@@ -56,7 +56,47 @@ def generate_theoretical_spectrum(peptide):
             else:
                 sub_pep = peptide[j:] + peptide[0:latter-len_pep]
                 spectrum.append(peptide_to_integer(sub_pep))
-    return sorted(spectrum)
+    spectrum.sort()
+    return spectrum
             
+def generate_linear_spectrum(peptide):
+    spectrum = [0, peptide_to_integer(peptide)]
+    len_pep = len(peptide)
+    for i in range(0, len_pep):
+        for j in range(i+1, len_pep+1):
+           sub_pep = peptide[i:j]
+           spectrum.append(peptide_to_integer(sub_pep))
+    spectrum.sort()
+    return spectrum
+aas = integer_mass_table.keys()
+def expand_peptide(peptides):
+    return {peptide+a for a in aas for peptide in peptides}
 
+def peptide_sequence(spectrum):
+    max_mass = max(spectrum)
+    all_i = set(spectrum)
+    peptides = {aa for s in spectrum for aa in integer_mass_table \
+                   if integer_mass_table[aa] == s}
+    output = set()
+    while len(peptides) > 0:
+        peptides = expand_peptide(peptides)
+        copy = peptides.copy()
+        for peptide in copy:
+            mass = peptide_to_integer(peptide)
+            current_spectrum = generate_theoretical_spectrum(peptide)
+            if mass == max_mass:
+                if current_spectrum == spectrum:
+                    output.add(peptide)
+                peptides.remove(peptide)
+            else:
+                # use linear_spectrum instead of cyclic spectrum 
+                # otherwise will over bounding 
+                linear_spectrum = generate_linear_spectrum(peptide) 
+                consistent = all(i in all_i for i in linear_spectrum)
+                if not consistent:
+                    peptides.remove(peptide)
+    return output
+
+def process_out(out):
+    return {"-".join([str(integer_mass_table[i]) for i in aa]) for aa in out}
 
