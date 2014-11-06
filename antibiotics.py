@@ -104,3 +104,13 @@ def peptide_sequence(spectrum):
 def process_out(out):
     return {"-".join([str(integer_mass_table[i]) for i in aa]) for aa in out}
 
+
+def compute_spectrum_score(peptide, spectrum):
+    threoretical_spectrum = generate_theoretical_spectrum(peptide)
+    return sum(s in threoretical_spectrum for s in spectrum)
+
+def best_peptide_sequence(spectrum):
+
+    
+
+
