@@ -29,13 +29,13 @@ def peptide_decode(dna, peptide):
     len_dna_fragment = len_peptide * 3
     dna_encodes = []
     for i in range(0, len_dna-len_dna_fragment+1):
-        dna_fragment = dna[i:i+len_DNA_fragment]
+        dna_fragment = dna[i:i+len_dna_fragment]
         rc_dna_fragment = reverse_complement(dna_fragment)
     	rna_fragment = transcribe(dna_fragment)
         rc_rna_fragment = transcribe(rc_dna_fragment)
         if translate(rna_fragment) == peptide or translate(rc_rna_fragment) == peptide:
-            encodes.append(dna_fragment)
-    return encodes
+            dna_encodes.append(dna_fragment)
+    return dna_encodes
 
 def peptide_to_integer(peptide):
     """get the mass of a peptide"""
@@ -68,11 +68,15 @@ def generate_linear_spectrum(peptide):
            spectrum.append(peptide_to_integer(sub_pep))
     spectrum.sort()
     return spectrum
+
 aas = integer_mass_table.keys()
 def expand_peptide(peptides):
     return {peptide+a for a in aas for peptide in peptides}
 
 def peptide_sequence(spectrum):
+    """use branching and bounding to get the peptide sequence from a full spectrum
+       input: spectrum
+       outpit: set of peptide sequence"""
     max_mass = max(spectrum)
     all_i = set(spectrum)
     peptides = {aa for s in spectrum for aa in integer_mass_table \
