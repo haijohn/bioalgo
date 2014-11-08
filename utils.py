@@ -4,6 +4,7 @@
 io utils function for read dataset and write result
 """
 from __future__ import print_function
+import re
 
 
 def read_content(filename, numline=2):
@@ -14,9 +15,14 @@ def read_content(filename, numline=2):
     content = []
     for i in range(numline):
         line = f.readline().strip()
-        content.append(int(line) if line.isdigit() else line)
+        if re.match("\d+", line):
+            if re.match("\d+\s\d+", line):
+                line = [int(i) for i in line.split(" ")]
+            else:
+                line = int(line)
+        content.append(line)
     f.close()
-    return tuple(content) if numline > 1 else content[0]
+    return content if numline > 1 else content[0]
 
 def write_result(filename, content, sep=" "):
     if not isinstance(filename, file):
