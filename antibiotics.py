@@ -8,6 +8,7 @@ https://class.coursera.org/bioinformatics-002
 Unit2: How Do We Sequence Antibiotics? (Brute Force Algorithms)
 
 """
+from collections import Counter
 from utils import rna_codon_table
 from utils import integer_mass_table
 from oricfinder import reverse_complement
@@ -41,7 +42,7 @@ def peptide_to_integer(peptide):
     """get the mass of a peptide"""
     return sum(integer_mass_table[a] for a in peptide)
 
-def generate_theoretical_spectrum(peptide):
+def generate_cyclic_spectrum(peptide):
     """Generate the theoretical spectrum of a cyclic peptide.
        Input: An amino acid string Peptide.
        Output: Cyclospectrum(Peptide)"""
@@ -87,7 +88,7 @@ def peptide_sequence(spectrum):
         copy = peptides.copy()
         for peptide in copy:
             mass = peptide_to_integer(peptide)
-            current_spectrum = generate_theoretical_spectrum(peptide)
+            current_spectrum = generate_cyclic_spectrum(peptide)
             if mass == max_mass:
                 if current_spectrum == spectrum:
                     output.add(peptide)
@@ -104,13 +105,57 @@ def peptide_sequence(spectrum):
 def process_out(out):
     return {"-".join([str(integer_mass_table[i]) for i in aa]) for aa in out}
 
+def compute_spectrum_score(peptide, spectrum, spec_type="cyclic"):
+    """Compute the score of a cyclic peptide against a spectrum.
+     Input: An amino acid string Peptide and a collection of integers Spectrum. 
+     Output: The score of Peptide against Spectrum, Score(Peptide, Spectrum)."""
+    if spec_type == "cyclic":
+        threoretical_spectrum = generate_cyclic_spectrum(peptide)
+    elif spec_type == "linear":
+        threoretical_spectrum = generate_linear_spectrum(peptide)
+    # get number of occuerence of each integer using Counter Object
+    threoretical_counter = Counter(threoretical_spectrum)
+    experiment_counter = Counter(spectrum)
+    uniq_spectrum = set(spectrum)
+    return sum(min(threoretical_counter[s],experiment_counter[s]) for s in uniq_spectrum)
 
-def compute_spectrum_score(peptide, spectrum):
-    threoretical_spectrum = generate_theoretical_spectrum(peptide)
-    return sum(s in threoretical_spectrum for s in spectrum)
+def trim_leaderbord(leaderbord, spectrum, N):
+    """Input: A collection of peptides Leaderboard, a collection of integers Spectrum, and an integer N.
+     Output: The N highest-scoring linear peptides on Leaderboard with respect to Spectrum."""
+    #list of tuples [(peptide,score),..)
+    peptide_score = [(peptide,compute_spectrum_score(peptide,spectrum,'linear')) \
+                      for peptide in leaderbord] 
+    peptide_score.sort(key=lambda x:x[1], reverse=True)
+    for i in range(N, len(leaderbord)):
+        if peptide_score[i][1] < peptide_score[N-1][1]:
+            return [ps[0] for ps in peptide_score[:i]]
+    return {ps[0] for ps in peptide_score}
 
-def best_peptide_sequence(spectrum):
-
+def leaderboder_cyclic_sequence(spectrum, N):
+    """"Input: An integer N and a collection of integers Spectrum.
+     Output: LeaderPeptide after running LEADERBOARDCYCLOPEPTIDESEQUENCING(Spectrum, N)."""
+    leader_peptide = ""
+    leaderbord = {""}
+    max_mass = max(spectrum)
+    while len(leaderbord) > 0:
+        leaderbord = expand_peptide(leaderbord)
+        copy = leaderbord.copy()
+        for peptide in copy:
+            mass = peptide_to_integer(peptide)
+            if mass == max_mass:
+                score = compute_spectrum_score(peptide, spectrum, "linear")
+                leader_score = compute_spectrum_score(leader_peptide, spectrum, "linear")
+                if score > leader_score:
+                    leader_peptide = peptide
+            elif mass > max_mass:
+                leaderbord.remove(peptide)
+        leaderbord = trim_leaderbord(leaderbord, spectrum, N)
+        print leaderbord
+    return leader_peptide
+               
+        
+        
+    
     
 
 
