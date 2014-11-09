@@ -13,13 +13,16 @@ from utils import rna_codon_table
 from utils import integer_mass_table
 from oricfinder import reverse_complement
 
+
 def translate(rna):
     if len(rna) % 3 != 0:
         raise Exception("length is not right")
-    return "".join(rna_codon_table[rna[i:i+3]] for i in range(0,len(rna),3))
+    return "".join(rna_codon_table[rna[i:i+3]] for i in range(0, len(rna), 3))
+
 
 def transcribe(dna):
-    return "".join("U" if n=="T" else n for n in dna)
+    return "".join("U" if n == "T" else n for n in dna)
+
 
 def peptide_decode(dna, peptide):
     """find the corresponding encode of a peptide
@@ -39,9 +42,11 @@ def peptide_decode(dna, peptide):
             dna_encodes.append(dna_fragment)
     return dna_encodes
 
+
 def peptide_to_integer(peptide):
     """get the mass of a peptide"""
     return sum(integer_mass_table[a] for a in peptide)
+
 
 def generate_cyclic_spectrum(peptide):
     """Generate the theoretical spectrum of a cyclic peptide.
@@ -61,19 +66,23 @@ def generate_cyclic_spectrum(peptide):
     spectrum.sort()
     return spectrum
 
+
 def generate_linear_spectrum(peptide):
     spectrum = [0, peptide_to_integer(peptide)]
     len_pep = len(peptide)
     for i in range(0, len_pep):
         for j in range(i+1, len_pep+1):
-           sub_pep = peptide[i:j]
-           spectrum.append(peptide_to_integer(sub_pep))
+            sub_pep = peptide[i:j]
+            spectrum.append(peptide_to_integer(sub_pep))
     spectrum.sort()
     return spectrum
 
 aas = integer_mass_table.keys()
+
+
 def expand_peptide(peptides):
     return {peptide+a for a in aas for peptide in peptides}
+
 
 def peptide_sequence(spectrum):
     """use branching and bounding to get the sequence from a full spectrum
@@ -81,8 +90,8 @@ def peptide_sequence(spectrum):
        outpit: set of peptide sequence"""
     max_mass = max(spectrum)
     all_i = set(spectrum)
-    peptides = {aa for s in spectrum for aa in integer_mass_table \
-                   if integer_mass_table[aa] == s}
+    peptides = {aa for s in spectrum for aa in integer_mass_table
+                if integer_mass_table[aa] == s}
     output = set()
     while len(peptides) > 0:
         peptides = expand_peptide(peptides)
@@ -103,8 +112,10 @@ def peptide_sequence(spectrum):
                     peptides.remove(peptide)
     return output
 
+
 def process_out(out):
     return {"-".join([str(integer_mass_table[i]) for i in aa]) for aa in out}
+
 
 def compute_spectrum_score(peptide, spectrum, spec_type="cyclic"):
     """Compute the score of a cyclic peptide against a spectrum.
@@ -118,24 +129,26 @@ def compute_spectrum_score(peptide, spectrum, spec_type="cyclic"):
     threoretical_counter = Counter(threoretical_spectrum)
     experiment_counter = Counter(spectrum)
     uniq_spectrum = set(spectrum)
-    return sum(min(threoretical_counter[s],experiment_counter[s]) \
+    return sum(min(threoretical_counter[s], experiment_counter[s])
                for s in uniq_spectrum)
+
 
 def trim_leaderbord(leaderbord, spectrum, N):
     """Input: A collection of peptides Leaderboard, a collection of
               integers Spectrum, and an integer N.
        Output: The N highest-scoring linear peptides on Leaderboard
                with respect to Spectrum."""
-    #list of tuples [(peptide,score),..)
-    peptide_score = [(peptide,compute_spectrum_score(peptide,
-                                                     spectrum,
-                                                     'linear')) \
-                      for peptide in leaderbord]
-    peptide_score.sort(key=lambda x:x[1], reverse=True)
+    # list of tuples [(peptide,score),..)
+    peptide_score = [(peptide, compute_spectrum_score(peptide,
+                                                      spectrum,
+                                                      'linear'))
+                     for peptide in leaderbord]
+    peptide_score.sort(key=lambda x: x[1], reverse=True)
     for i in range(N, len(leaderbord)):
         if peptide_score[i][1] < peptide_score[N-1][1]:
             return [ps[0] for ps in peptide_score[:i]]
     return {ps[0] for ps in peptide_score}
+
 
 def leaderboder_cyclic_sequence(spectrum, N):
     """"Input: An integer N and a collection of integers Spectrum.
@@ -160,6 +173,24 @@ def leaderboder_cyclic_sequence(spectrum, N):
         leaderbord = trim_leaderbord(leaderbord, spectrum, N)
         print leader_peptide
     return leader_peptide
+
+
+def spectrum_convolution(spectrum):
+    """Compute the convolution of a spectrum.
+       Input: A collection of integers Spectrum.
+       Output: The list of elements in the convolution of Spectrum.
+               If an element has multiplicity k, it should appear exactly
+               k times; you may return the elements in any order."""
+    spectrum.sort()
+    convolution = []
+    for i in range(len(spectrum)):
+        for j in range(i+1, len(spectrum)):
+           convolution.append(spectrum[j]-spectrum[i])
+    #convolution.sort()
+    return convolution
+
+
+
 
 
 
