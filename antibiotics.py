@@ -146,7 +146,7 @@ def trim_leaderbord(leaderbord, spectrum, N):
     peptide_score.sort(key=lambda x: x[1], reverse=True)
     for i in range(N, len(leaderbord)):
         if peptide_score[i][1] < peptide_score[N-1][1]:
-            return [ps[0] for ps in peptide_score[:i]]
+            return {ps[0] for ps in peptide_score[:i]}
     return {ps[0] for ps in peptide_score}
 
 
@@ -185,15 +185,27 @@ def spectrum_convolution(spectrum):
     convolution = []
     for i in range(len(spectrum)):
         for j in range(i+1, len(spectrum)):
-           convolution.append(spectrum[j]-spectrum[i])
-    #convolution.sort()
+            conv =  spectrum[j] - spectrum[i]
+            if conv > 0:
+                convolution.append(conv)
+    convolution.sort()
     return convolution
 
+def top_m_convolition(m, convolution):
+    conv_counter = Counter(convolution).items()
+    conv_counter.sort(key=lambda x:x[1], reverse = True)
+    for i in range(m, len(conv_counter)):
+        if conv_counter[i][1] < conv_counter[m-1][1]:
+            return {cc[0] for cc in conv_counter[:i]}
+    return {cc[0] for cc in conv_counter[:i]}
 
 
-
-
-
-
+def leaderbord_by_convolution(m, n, spectrum):
+    """Input: An integer M, an integer N,
+              and a collection of (possibly repeated) integers Spectrum.
+       Output: A cyclic peptide LeaderPeptide with amino acids taken only
+               from the top M elements(and ties) of the convolution of Spectrum
+               that fall between 57 and 200, and where the size of Leaderboard
+               is restricted to the top N (and ties)."""
 
 
