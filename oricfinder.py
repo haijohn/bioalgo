@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Coursera Course: Bioinformatics Algorithms (Part 1) 
+Coursera Course: Bioinformatics Algorithms (Part 1)
 
 https://class.coursera.org/bioinformatics-002
 
@@ -16,7 +16,7 @@ import sys
 from collections import defaultdict
 
 
-## find the most frequent words
+# find the most frequent words
 def pattern_count(text, pattern):
     count = 0
     len_pattern = len(pattern)
@@ -25,6 +25,7 @@ def pattern_count(text, pattern):
         if text[i:len_pattern+i] == pattern:
             count += 1
     return count
+
 
 def frequent_words(text, k):
     """A naive implemtaion to find the most frequent words in a text"""
@@ -41,28 +42,28 @@ def frequent_words(text, k):
     return max_kmers
 
 
+# find most frequent words by indexing
 
-## find most frequent words by indexing
+alphabet_to_int = {"A": 0,
+                   "C": 1,
+                   "G": 2,
+                   "T": 3}
 
-alphabet_to_int = {"A":0,
-                   "C":1,
-                   "G":2,
-                   "T":3}
+int_to_alphabet = {0: "A",
+                   1: "C",
+                   2: "G",
+                   3: "T"
+                   }
 
-int_to_alphabet = { 0:"A",
-                    1:"C",
-                    2:"G",
-                    3:"T"
-                  }   
 
 def pattern_to_number(pattern):
-    """ 
+    """
     """
     l = len(pattern)
-    return sum(alphabet_to_int[pattern[i]]*4**(l-i-1) \
-                for i in range(l))
+    return sum(alphabet_to_int[pattern[i]]*4**(l-i-1)
+               for i in range(l))
 
- 
+
 def number_to_pattern(num, k):
     pattern = []
     for i in range(k):
@@ -70,7 +71,8 @@ def number_to_pattern(num, k):
         num = num / 4
         pattern.append(int_to_alphabet[mod])
     return "".join(pattern[::-1])
-    
+
+
 def compute_frequency(text, k):
     frequency_array = [0 for i in range(4**k)]
     for i in range(len(text)-k+1):
@@ -78,6 +80,7 @@ def compute_frequency(text, k):
         j = pattern_to_number(pattern)
         frequency_array[j] += 1
     return frequency_array
+
 
 def frequent_words_by_index(text, k):
     frequent_patterns = set([])
@@ -89,7 +92,9 @@ def frequent_words_by_index(text, k):
             frequent_patterns.add(pattern)
     return frequent_patterns
 
-## find most frequent words by sorting
+# find most frequent words by sorting
+
+
 def frequent_words_by_sort(text, k):
     frequent_patterns = set([])
     indexes = []
@@ -108,7 +113,9 @@ def frequent_words_by_sort(text, k):
             frequent_patterns.add(number_to_pattern(i, k))
     return frequent_patterns
 
-## find most frequent words by hashing
+# find most frequent words by hashing
+
+
 def frequent_words_by_hash(text, k):
     pattern_count_hash = defaultdict(int)
     frequent_patterns = set([])
@@ -116,11 +123,11 @@ def frequent_words_by_hash(text, k):
         pattern = text[i:i+k]
         pattern_count_hash[pattern] += 1
     max_count = max(pattern_count_hash.values())
-    for pattern,count in pattern_count_hash.items():
+    for pattern, count in pattern_count_hash.items():
         if count == max_count:
             frequent_patterns.add(pattern)
     return frequent_patterns
-     
+
 
 def frequent_words_by_hash_thre(text, k, t):
     """t is the cutoff """
@@ -129,10 +136,11 @@ def frequent_words_by_hash_thre(text, k, t):
     for i in range(len(text)-k+1):
         pattern = text[i:i+k]
         pattern_count_hash[pattern] += 1
-    for pattern,count in pattern_count_hash.items():
+    for pattern, count in pattern_count_hash.items():
         if count >= t:
             frequent_patterns.add(pattern)
     return frequent_patterns
+
 
 def pattern_match(genome, pattern):
     """Input: Two strings, Pattern and Genome.
@@ -140,10 +148,11 @@ def pattern_match(genome, pattern):
     genome_size = len(genome)
     pattern_size = len(pattern)
     match_positions = []
-    for i in range(genome_size- pattern_size+1):
+    for i in range(genome_size - pattern_size+1):
         if genome[i:i+pattern_size] == pattern:
             match_positions.append(i)
     return match_positions
+
 
 def find_clump(genome, l, k, t):
     """Clump Finding Problem: Find patterns forming clumps in a string.
@@ -157,7 +166,9 @@ def find_clump(genome, l, k, t):
         clump_kmers |= patterns
     return clump_kmers
 
-## get minimal skew position of a genome
+# get minimal skew position of a genome
+
+
 def min_skew_position(genome):
     genome_size = len(genome)
     G_minus_C = [0]
@@ -175,24 +186,29 @@ def min_skew_position(genome):
             min_indexes.append(i)
     return min_indexes
 
-## get reverse complementary of a sequence
+# get reverse complementary of a sequence
 complementary_table = {
-                       "A":"T",
-                       "C":"G",
-                       "G":"C",
-                       "T":"A"
-                      }
+    "A": "T",
+    "C": "G",
+    "G": "C",
+    "T": "A"
+    }
+
+
 def reverse_complement(pattern):
     return "".join([complementary_table[N] for N in pattern][::-1])
 
-## get hamming distance of two string
+# get hamming distance of two string
+
+
 def hamming_distance(s1, s2):
-    return sum(ch1!=ch2 for ch1,ch2 in zip(s1,s2))
+    return sum(ch1 != ch2 for ch1, ch2 in zip(s1, s2))
+
 
 def approximate_pattern_match(pattern, text, d):
     """Find all approximate occurrences of a pattern in a string.
        Input: Strings Pattern and Text along with an integer d.
-       Output: All starting positions where Pattern appears as 
+       Output: All starting positions where Pattern appears as
                a substring of Text with at most d mismatches."""
     positions = []
     len_pattern = len(pattern)
@@ -201,11 +217,10 @@ def approximate_pattern_match(pattern, text, d):
         if hamming_distance(pattern, text[i:i+len_pattern]) <= d:
             positions.append(i)
     return positions
-    
+
+
 def approximate_pattern_count(text, pattern, d):
     return len(approximate_pattern_match(pattern, text, d))
-
-
 
 
 def immediate_neighbors(pattern):
@@ -217,9 +232,10 @@ def immediate_neighbors(pattern):
         after = pattern[i+1:]
         for m in "ATCG":
             if m != current:
-                neighbor = "".join([before,m,after])
-                neighbors.add(neighbor)	
+                neighbor = "".join([before, m, after])
+                neighbors.add(neighbor)
     return neighbors
+
 
 def iterative_neighbors(pattern, d):
     neighbors = set([pattern])
@@ -229,8 +245,10 @@ def iterative_neighbors(pattern, d):
             neighbors.update(immediate_neighbors(pat))
     return neighbors
 
+
 def recursive_neighbors(pattern, d):
     pass
+
 
 def frequent_words_with_mismatch_rc(text, k, d):
     """Find the most frequent k-mers with mismatches in a string.
@@ -248,8 +266,9 @@ def frequent_words_with_mismatch_rc(text, k, d):
         if close_array[i] == 1:
             pattern = number_to_pattern(i, k)
             frequent_array[i] = approximate_pattern_count(text, pattern, d) + \
-                                approximate_pattern_count(text, 
-                                                          reverse_complement(pattern), d)
+                                approximate_pattern_count(text,
+                                                          reverse_complement(pattern),
+                                                          d)
     max_count = max(frequent_array)
     for i in range(4**k):
         if frequent_array[i] == max_count:
@@ -260,4 +279,3 @@ def frequent_words_with_mismatch_rc(text, k, d):
 
 def frequent_words_with_mismatch_by_sort(text, k):
     pass
-

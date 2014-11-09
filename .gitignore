@@ -53,3 +53,4 @@ docs/_build/
 data
 # PyBuilder
 target/
+.ropeproject
