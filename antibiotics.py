@@ -52,7 +52,10 @@ def generate_cyclic_spectrum(peptide):
     """Generate the theoretical spectrum of a cyclic peptide.
        Input: An amino acid string Peptide.
        Output: Cyclospectrum(Peptide)"""
-    spectrum = [0, peptide_to_integer(peptide)]
+    if isinstance(peptide, str):
+        spectrum = [0, peptide_to_integer(peptide)]
+    else:
+        spectrum = [0, sum(peptide)]
     len_pep = len(peptide)
     for i in range(1, len_pep):
         for j in range(0, len_pep):
@@ -68,7 +71,10 @@ def generate_cyclic_spectrum(peptide):
 
 
 def generate_linear_spectrum(peptide):
-    spectrum = [0, peptide_to_integer(peptide)]
+    if isinstance(peptide, str):
+        spectrum = [0, peptide_to_integer(peptide)]
+    else:
+        spectrum = [0, sum(peptide)]
     len_pep = len(peptide)
     for i in range(0, len_pep):
         for j in range(i+1, len_pep+1):
@@ -171,7 +177,6 @@ def leaderboder_cyclic_sequence(spectrum, N):
             elif mass > max_mass:
                 leaderbord.remove(peptide)
         leaderbord = trim_leaderbord(leaderbord, spectrum, N)
-        print leader_peptide
     return leader_peptide
 
 
@@ -182,22 +187,31 @@ def spectrum_convolution(spectrum):
                If an element has multiplicity k, it should appear exactly
                k times; you may return the elements in any order."""
     spectrum.sort()
-    convolution = []
-    for i in range(len(spectrum)):
-        for j in range(i+1, len(spectrum)):
-            conv =  spectrum[j] - spectrum[i]
-            if conv > 0:
-                convolution.append(conv)
+    l = len(spectrum)
+    convolution = [spectrum[j]-spectrum[i] for i in range(l)
+                                           for j in range(i+1,l)]
     convolution.sort()
     return convolution
 
-def top_m_convolition(m, convolution):
+def top_m_convolution(m, convolution):
     conv_counter = Counter(convolution).items()
     conv_counter.sort(key=lambda x:x[1], reverse = True)
-    for i in range(m, len(conv_counter)):
-        if conv_counter[i][1] < conv_counter[m-1][1]:
-            return {cc[0] for cc in conv_counter[:i]}
-    return {cc[0] for cc in conv_counter[:i]}
+    top_k = 0
+    top_convs = []
+    for i in range(len(conv_counter)):
+        conv, count = conv_counter[i]
+        print conv, count
+        if conv < 200 and conv > 57:
+            top_convs.append(conv)
+            top_k += 1
+            if top_k > m:
+                break
+    return top_convs
+
+
+def expand_peptide_realword(peptides, convolution):
+    """expand a integer in the convolution"""
+    return {peptide.append(i) for peptide in peptides for i in convolution}
 
 
 def leaderbord_by_convolution(m, n, spectrum):
@@ -207,5 +221,28 @@ def leaderbord_by_convolution(m, n, spectrum):
                from the top M elements(and ties) of the convolution of Spectrum
                that fall between 57 and 200, and where the size of Leaderboard
                is restricted to the top N (and ties)."""
+    convolution = spectrum_convolution(spectrum)
+    top_conv = top_m_convolution(m, convolution)
+    leader_peptide = []
+    leaderbord = set([])
+    max_mass = max(spectrum)
+    while len(leaderbord) > 0:
+        leaderbord = expand_peptide_realword(leaderbord, top_conv)
+        copy = leaderbord.copy()
+        for peptide in copy:
+            mass = peptide_to_integer(peptide)
+            if mass == max_mass:
+                score = compute_spectrum_score(peptide, spectrum, "linear")
+                leader_score = compute_spectrum_score(leader_peptide,
+                                                      spectrum,
+                                                      "linear")
+                if score > leader_score:
+                    leader_peptide = peptide
+            elif mass > max_mass:
+                leaderbord.remove(peptide)
+        leaderbord = trim_leaderbord(leaderbord, spectrum, n)
+    return leader_peptide
+
+
 
 
