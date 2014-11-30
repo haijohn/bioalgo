@@ -18,6 +18,8 @@ def read_content(filename, numline=2):
         if re.match("\d+", line):
             if re.match("\d+\s\d+", line):
                 line = [int(i) for i in line.split(" ")]
+            elif re.match("\d+\.\d+\s\d+\.\d+", line):
+                line = [float(i) for i in line.split(" ")]
             else:
                 line = int(line)
         content.append(line)

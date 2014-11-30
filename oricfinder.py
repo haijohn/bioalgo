@@ -237,7 +237,7 @@ def immediate_neighbors(pattern):
     return neighbors
 
 
-def iterative_neighbors(pattern, d):
+def neighbors(pattern, d):
     neighbors = set([pattern])
     for i in range(d):
         neighs = neighbors.copy()
