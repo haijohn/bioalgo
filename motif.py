@@ -13,6 +13,7 @@ from oricfinder import neighbors
 from oricfinder import hamming_distance
 from oricfinder import number_to_pattern
 from functools import reduce
+import random
 
 def generate_kmers(dna, k):
     return [dna[i:k+i] for i in range(len(dna)-k+1)]
@@ -41,7 +42,6 @@ def median_string(dnas, k):
                         for i in range(4**k)),
                 key = lambda x: x[1])[0]
 
-
 def profile_most_probable(dna, k, profile):
     """Input: A string Text, an integer k, and a 4 * k matrix Profile.
        Output: A Profile-most probable k-mer in Text.
@@ -66,8 +66,6 @@ def score(motifs):
     profile = get_profile(motifs)
     return sum([t-max([p[i] for p in profile])*t for i in range(k)])
 
-
-
 def greedy_motif_search(dnas, k, t):
     kmerss = [generate_kmers(dna, k) for dna in dnas]
     best_motifs = [kmers[0] for kmers in kmerss]
@@ -79,6 +77,36 @@ def greedy_motif_search(dnas, k, t):
         if score(motifs) < score(best_motifs):
             best_motifs = motifs
     return best_motifs
+
+def randomized_motif_search(dnas, k, t):
+    kmerss = [generate_kmers(dna, k) for dna in dnas]
+    best_motifs = [kmers[random.randint(0,len(kmers)-1)] for kmers in kmerss]
+    while True:
+        profile = get_profile(best_motifs)
+        motifs = [profile_most_probable(dna, k, profile) for dna in dnas]
+        if score(motifs) < score(best_motifs):
+            best_motifs = motifs
+        else:
+            return best_motifs
+
+
+def gibbs_sampler(dnas, k, t, N):
+    kmerss = [generate_kmers(dna, k) for dna in dnas]
+    best_motifs = [kmers[random.randint(0,len(kmers)-1)] for kmers in kmerss]
+    motifs = best_motifs[:]
+    for j in range(N):
+        i = random.randint(0,t-1)
+        motifs.pop(i)
+        profile = get_profile(motifs)
+        motifs.insert(i, profile_most_probable(dnas[i], k, profile))
+        if score(motifs) < score(best_motifs):
+            best_motifs = motifs
+    return best_motifs
+
+def simulate(num_trail, dnas, k, t, N, randomized_search):
+    return min((randomized_search(dnas, k, t, N) for i in range(num_trail)),
+               key = lambda x: score(x))
+
 
 
 
