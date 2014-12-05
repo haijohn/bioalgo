@@ -23,7 +23,7 @@ def motif_enumeration(dnas, k, d):
        Output: All (k, d)-motifs in Dna.
     """
     return reduce(lambda x, y: x & y,
-                    (reduce(lambda x, y: x | y,
+                    (reduce(lambda x, y: x + y,
                           (neighbors(kmer,d) for kmer in generate_kmers(dna,k)))
                                 for dna in dnas))
 
