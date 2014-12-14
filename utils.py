@@ -13,14 +13,16 @@ def read_content(filename, numline=2):
     else:
         f = filename
     content = []
-    for i in range(numline):
-        line = f.readline().strip()
+    for line in f:
+        line = line.strip()
         if re.match("\d+", line):
             if re.match("\d+\s\d+", line):
                 line = [int(i) for i in line.split(" ")]
             elif re.match("\d+\.\d+\s\d+\.\d+", line):
                 line = [float(i) for i in line.split(" ")]
-            else:
+            elif re.match("\d+\n$", line):
+                line = int(line)
+            elif re.match("\d+$", line):
                 line = int(line)
         content.append(line)
     f.close()
@@ -31,12 +33,17 @@ def write_result(filename, content, sep=" "):
         f = open(filename, "w")
     else:
         f = filename
-    try:
-        content = iter(content)
-    except TypeError:
+    if isinstance(content, str):
+        print(content, file=f)
+    elif isinstance(content,int) or isinstance(content, float):
         print(content, file=f)
     else:
-    	print(sep.join(str(c) if not isinstance(c,str) else c for c \
+        try:
+            content = iter(content)
+        except TypeError:
+            print(content, file=f)
+        else:
+    	    print(sep.join(str(c) if not isinstance(c,str) else c for c \
                         in content), file=f)
     f.close()
 
