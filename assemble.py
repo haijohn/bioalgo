@@ -5,7 +5,7 @@ Coursera Course: Bioinformatics Algorithms (Part 1)
 
 https://class.coursera.org/bioinformatics-002
 
-Unit1:  4. HOW DO WE ASSEMBLE GENOMES?
+Unit:  4. HOW DO WE ASSEMBLE GENOMES?
 
 find the replicate origin of a bacteria genome
 
