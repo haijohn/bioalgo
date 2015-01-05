@@ -164,9 +164,9 @@ def output_lcs(backtrack,v,i,j,s=None):
 #with open('2.txt','w') as f:
 #    print>>f,''.join(s)
 
-def parse_blosum62(blosum_file):
+def parse_score_matrix(score_file):
     blosum_matrix = {}
-    with open(blosum_file) as f:
+    with open(score_file) as f:
        header = f.readline().strip().split()
        for line in f:
            line = line.strip().split()
@@ -177,7 +177,7 @@ def parse_blosum62(blosum_file):
                
 
 
-def global_alignment(v,w,blosum62,gap_penalty=-5):
+def global_alignment(v, w, score_matrix, gap_penalty=-5):
     m = len(v)
     n = len(w)
     s = {}
@@ -193,7 +193,7 @@ def global_alignment(v,w,blosum62,gap_penalty=-5):
         for j in range(1,n+1):
             s[(i,j)] = max(s[(i-1,j)] + gap_penalty,
                            s[(i,j-1)] + gap_penalty,
-                           s[(i-1,j-1)] + blosum62[(v[i-1],w[j-1])],
+                           s[(i-1,j-1)] + score_matrix[(v[i-1],w[j-1])],
                           )
             if s[(i,j)] == s[(i-1,j)] + gap_penalty:
                 backtrack[(i,j)] = 'down'
@@ -203,7 +203,39 @@ def global_alignment(v,w,blosum62,gap_penalty=-5):
                 backtrack[(i,j)] = 'diag'
     return backtrack,s[m,n]
           
-def print_alignment(backtrack,v,w,i,j,s=None,p=None):
+def local_alignment(v,w,score_matrix,gap_penalty=-5):
+    m = len(v)
+    n = len(w)
+    s = {}
+    max_score = 0
+    max_position = (0,0)
+    s[(0,0)] = 0
+    backtrack = {}
+    for i in range(1,m+1):
+        s[(i,0)] = 0
+        backtrack[(i,0)] = 'down'
+    for j in range(1,n+1):
+        s[(0,j)] = 0
+        backtrack[(0,j)] = 'right'
+    for i in range(1,m+1):
+        for j in range(1,n+1):
+            s[(i,j)] = max(
+                           0,
+                           s[(i-1,j)] + gap_penalty,
+                           s[(i,j-1)] + gap_penalty,
+                           s[(i-1,j-1)] + score_matrix[(v[i-1],w[j-1])],
+                          )
+            if s[(i,j)] == s[(i-1,j)] + gap_penalty:
+                backtrack[(i,j)] = 'down'
+            elif s[(i,j)] == s[(i,j-1)] + gap_penalty:
+                backtrack[(i,j)] = 'right'
+            #elif s[(i,j)] == 0:
+            #    backtrack[(i,j)] = 'miss'
+            else:
+                backtrack[(i,j)] = 'diag'
+    return backtrack, s
+          
+def print_alignment(backtrack, v, w, i, j, s=None, p=None):
     if s is None:
         s = []
     if p is None:
@@ -225,14 +257,39 @@ def print_alignment(backtrack,v,w,i,j,s=None,p=None):
     return s,p
 
 
-m = parse_blosum62('BLOSUM62.txt')
+def print_local_alignment(backtrack,v, w, i, j, s=None, p=None):
+    if s is None:
+        s = []
+    if p is None:
+        p = []
+    if scores[(i,j)] == 0:
+        return
+    if backtrack[(i,j)] == 'down':
+        print_local_alignment(backtrack,v,w,i-1,j,s,p)
+        p.append('-')
+        s.append(v[i-1])
+    elif backtrack[(i,j)] == 'right':
+        print_local_alignment(backtrack,v,w,i,j-1,s,p)
+        s.append('-')
+        p.append(w[j-1])
+    else:
+        print_local_alignment(backtrack,v,w,i-1,j-1,s,p)
+	s.append(v[i-1])
+	p.append(w[j-1])
+    return s,p
+#m = parse_blosum62('BLOSUM62.txt')
 c = read_content('1.txt')
 v = c[0]
 w = c[1]
-b,score = global_alignment(v,w,m)
+#v = 'AAAAMEANLY'
+#w = 'FFFFPENALTY'
+m = parse_score_matrix('PAM250_1.txt')
+b,scores = local_alignment(v,w,m)
+max_p = reduce(lambda x,y: y if x[1] < y[1] else x,scores.items())
+(i,j),score = max_p
 #print b
-s,p = print_alignment(b,v,w,len(v),len(w))
-q = output_lcs(b,v,len(v),len(w))
+s,p = print_local_alignment(b, v, w, i, j)
+#q = output_lcs(b,v,i,j)
 with open('2.txt','w') as f:
     print>>f, score
     print>>f, ''.join(s)
