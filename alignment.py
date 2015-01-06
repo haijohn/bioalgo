@@ -314,4 +314,98 @@ def edit_distance(v,w):
                                )
     return s[m,n]
 
-solve_local_alignment('1.txt','2.txt')
+def fitting_alignment(v,w,gap_penalty=-1):
+    m = len(v)
+    n = len(w)
+    s = {}
+    max_score = 0
+    max_position = (0,0)
+    s[(0,0)] = 0
+    backtrack = {}
+    for i in range(1,m+1):
+        s[(i,0)] = 0
+        backtrack[(i,0)] = 'down'
+    for j in range(1,n+1):
+        s[(0,j)] = s[(0,j-1)] + gap_penalty
+        backtrack[(0,j)] = 'right'
+    for i in range(1,m+1):
+        for j in range(1,n+1):
+            if v[i-1] == w[j-1]:
+                s[(i,j)] = max(
+#                           0,
+                           s[(i-1,j)] + gap_penalty,
+                           s[(i,j-1)] + gap_penalty,
+                           s[(i-1,j-1)] + 1
+                          )
+            else:
+                s[(i,j)] = max(
+ #                          0,
+                           s[(i-1,j)] + gap_penalty,
+                           s[(i,j-1)] + gap_penalty,
+                           s[(i-1,j-1)] + gap_penalty
+                          )
+                
+            if s[(i,j)] == s[(i-1,j)] + gap_penalty:
+                backtrack[(i,j)] = 'down'
+            elif s[(i,j)] == s[(i,j-1)] + gap_penalty:
+                backtrack[(i,j)] = 'right'
+            else:
+                backtrack[(i,j)] = 'diag'
+    return backtrack, s
+          
+def print_fitting_alignment(backtrack,v, w, i, j, s=None, p=None):
+    if s is None:
+        s = []
+    if p is None:
+        p = []
+    if j == 0: #global ????
+        return
+    if backtrack[(i,j)] == 'down':
+        print_fitting_alignment(backtrack,v,w,i-1,j,s,p)
+        p.append('-')
+        s.append(v[i-1])
+    elif backtrack[(i,j)] == 'right':
+        print_fitting_alignment(backtrack,v,w,i,j-1,s,p)
+        s.append('-')
+        p.append(w[j-1])
+    else:
+        print_fitting_alignment(backtrack,v,w,i-1,j-1,s,p)
+	s.append(v[i-1])
+	p.append(w[j-1])
+    return s,p
+
+def solve_fitting_alignment():
+    c = read_content('1.txt')
+    v = c[0]
+    w = c[1]
+    #v = 'GTAGGCTTAAGGTTA'
+    #w = 'TAGATA'
+    lw = len(w)
+    b,scores = fitting_alignment(v,w)
+    #print scores
+    margins = [item for item in scores.items() if item[0][1] == len(w)]
+    max_p = reduce(lambda x,y: y if x[1] < y[1] else x,margins)
+    #print max_p
+    (i,j),score = max_p
+    s,p = print_fitting_alignment(b, v, w, i, j)
+    print score
+    print ''.join(s)
+    print ''.join(p)
+
+c = read_content('1.txt')
+v = c[0]
+w = c[1]
+#v = 'PAWHEAE'
+#w = 'HEAGAWGHEE'
+lw = len(w)
+b,scores = fitting_alignment(v,w,gap_penalty=-2)
+#print scores
+margins = [item for item in scores.items() if item[0][0] == len(v)]
+max_p = reduce(lambda x,y: y if x[1] < y[1] else x,margins)
+#print max_p
+(i,j),score = max_p
+s,p = print_fitting_alignment(b, v, w, i, j)
+print score
+print ''.join(s)
+print ''.join(p)
+
