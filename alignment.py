@@ -130,14 +130,14 @@ def lcs_backtrack(v,w):
             else:
                 s[(i,j)] = max(s[(i-1,j)],
                                 s[(i,j-1)],
-                                s[(i-1,j-1)]
+                                #s[(i-1,j-1)]
                                )
             if s[(i,j)] == s[(i-1,j)]:
                 backtrack[(i,j)] = 'down'
             elif s[(i,j)] == s[(i,j-1)]:
                 backtrack[(i,j)] = 'right'
             else:
-                backtrack[(i,j)] = 'diag'
+                backtrack[(i,j)] = 'match'
     return backtrack
           
 
@@ -150,20 +150,13 @@ def output_lcs(backtrack,v,i,j,s=None):
         output_lcs(backtrack,v,i-1,j,s)
     elif backtrack[(i,j)] == 'right':
         output_lcs(backtrack,v,i,j-1,s)
+    elif backtrack[(i,j)] == 'mismatch':
+        output_lcs(backtrack,v,i-1,j-1,s)
     else:
         output_lcs(backtrack,v,i-1,j-1,s)
 	s.append(v[i-1])
     return s
         
-
-#c = read_content('1.txt')
-#v = c[0]
-#w = c[1]
-#b = lcs_backtrack(v,w)
-#s = output_lcs(b,v,len(v),len(w))
-#with open('2.txt','w') as f:
-#    print>>f,''.join(s)
-
 def parse_score_matrix(score_file):
     blosum_matrix = {}
     with open(score_file) as f:
@@ -229,8 +222,6 @@ def local_alignment(v,w,score_matrix,gap_penalty=-5):
                 backtrack[(i,j)] = 'down'
             elif s[(i,j)] == s[(i,j-1)] + gap_penalty:
                 backtrack[(i,j)] = 'right'
-            #elif s[(i,j)] == 0:
-            #    backtrack[(i,j)] = 'miss'
             else:
                 backtrack[(i,j)] = 'diag'
     return backtrack, s
@@ -262,7 +253,7 @@ def print_local_alignment(backtrack,v, w, i, j, s=None, p=None):
         s = []
     if p is None:
         p = []
-    if scores[(i,j)] == 0:
+    if scores[(i,j)] == 0: #global ????
         return
     if backtrack[(i,j)] == 'down':
         print_local_alignment(backtrack,v,w,i-1,j,s,p)
@@ -277,25 +268,50 @@ def print_local_alignment(backtrack,v, w, i, j, s=None, p=None):
 	s.append(v[i-1])
 	p.append(w[j-1])
     return s,p
-#m = parse_blosum62('BLOSUM62.txt')
-c = read_content('1.txt')
-v = c[0]
-w = c[1]
-#v = 'AAAAMEANLY'
-#w = 'FFFFPENALTY'
-m = parse_score_matrix('PAM250_1.txt')
-b,scores = local_alignment(v,w,m)
-max_p = reduce(lambda x,y: y if x[1] < y[1] else x,scores.items())
-(i,j),score = max_p
-#print b
-s,p = print_local_alignment(b, v, w, i, j)
-#q = output_lcs(b,v,i,j)
-with open('2.txt','w') as f:
-    print>>f, score
-    print>>f, ''.join(s)
-    print>>f, ''.join(p)
 
 
+def solve_local_alignment(input, output):
+    #m = parse_blosum62('BLOSUM62.txt')
+    c = read_content(input)
+    v = c[0]
+    w = c[1]
+    #v = 'AAAAMEANLY'
+    #w = 'FFFFPENALTY'
+    m = parse_score_matrix('PAM250_1.txt')
+    b,scores = local_alignment(v,w,m)
+    max_p = reduce(lambda x,y: y if x[1] < y[1] else x,scores.items())
+    (i,j),score = max_p
+    #print b
+    s,p = print_local_alignment(b, v, w, i, j)
+    #q = output_lcs(b,v,i,j)
+    with open(output,'w') as f:
+        print>>f, score
+        print>>f, ''.join(s)
+        print>>f, ''.join(p)
 
+def edit_distance(v,w):
+    """edit distance of two string"""
+    m = len(v)
+    n = len(w)
+    s = {}
+    s[(0,0)] = 0
+    backtrack = {}
+    for i in range(1,m+1):
+        s[(i,0)] = i
+    for j in range(1,n+1):
+        s[(0,j)] = j
+    for i in range(1,m+1):
+        for j in range(1,n+1):
+            if v[i-1] == w[j-1]:
+                s[(i,j)] = min(s[(i-1,j)] + 1,
+                                s[(i,j-1)] + 1,
+                                s[(i-1,j-1)] 
+                               )
+            else:
+                s[(i,j)] = min(s[(i-1,j)] + 1,
+                                s[(i,j-1)] + 1,
+                                s[(i-1,j-1)] + 1
+                               )
+    return s[m,n]
 
-
+solve_local_alignment('1.txt','2.txt')
