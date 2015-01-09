@@ -54,6 +54,19 @@ class DiGraph(object):
             self.nodes.add(node)
             self.edges[node] = []
 
+    def remove_node(self, node):
+        if node not in self.nodes:
+            raise Exception('node not in graph')
+        elif self.outdegree(node) + self.indegree(node) > 0:
+            raise Exception('there is other node link to this node remove edge first')
+        else:
+            self.nodes.remove(node)
+            self.edges.pop(node)
+
+    def force_remove_node(self, node):
+        """remove node and it's edges"""
+        pass
+
     def add_edge(self, edge):
         src = edge.get_src()
         dest = edge.get_dest()
@@ -62,23 +75,53 @@ class DiGraph(object):
         else:
             self.edges[src].append(dest)
 
+    def remove_edge(self, edge):
+        src = edge.get_src()
+        dest = edge.get_dest()
+        if src not in self.nodes or dest not in self.nodes:
+            raise Exception('node not in graph')
+        else:
+            try:
+                self.edges[src].remove(dest)
+            except ValueError:
+                raise Exception('edge not in graph')
+
     def get_children(self, node):
         if node not in self.nodes:
             raise Exception('node not in graph')
         return set(self.edges[node])
 
-    def outdegree(self,node):
+    def outdegree(self, node):
         return len(self.edges[node]) 
+
+    def out_edges(self, node):
+        return [Edge(node,dest) for dest in self.edges[node]]
 
     def get_parents(self, node):
         return {src_node for src_node in self.nodes 
                     if node in self.edges[src_node]}
             
-    def indegree(self,node):
+    def indegree(self, node):
         return len([src_node for src_node in self.nodes 
                     if node in self.edges[src_node]])
 
+    def in_edges(self, node):
+        return [Edge(src_node,node) for src_node in self.nodes
+                    if node in self.edges[src_node]]
 
+    def get_nodes(self):
+        return self.nodes
+
+    def has_node(self, node):
+        return node in self.nodes
+
+    def has_edge(self, edge):
+        src =  edge.get_src()
+        dest = edge.get_dest()
+        if src not in self.nodes:
+            return False
+        else:
+            return dest in self.edges[src]
 
             
         
