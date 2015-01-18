@@ -109,14 +109,13 @@ def manhatten_tourist(n, m, down_matrix, right_matrix):
 # end Manhattan tourist problem
 
 
-def toplogical_ordering(graph, src, dest):
+def toplogical_ordering(graph, src):
     ordering = [src]
     for edge in graph.out_edges(src):
         graph.remove_edge(edge)
     graph.remove_node(src)
     candidates = [node for node in graph.get_nodes() 
-                          if graph.indegree(node) == 0 
-                             and node != dest ]
+                          if graph.indegree(node) == 0  ]
     while candidates:
         candidate = candidates.pop()
         ordering.append(candidate)
@@ -124,13 +123,11 @@ def toplogical_ordering(graph, src, dest):
             graph.remove_edge(edge)
         graph.remove_node(candidate)
         candidates = [node for node in graph.get_nodes() 
-                          if graph.indegree(node) == 0
-                              and node != dest]
-    ordering.append(dest)
+                          if graph.indegree(node) == 0]
     return ordering
 
 
-def bulid_graph(graph_file):
+def build_graph(graph_file):
     g = DiGraph()
     with open(graph_file) as f:
         source = f.readline().strip()
