@@ -123,5 +123,23 @@ class DiGraph(object):
         else:
             return dest in self.edges[src]
 
+    def get_edge(self, src, dest):
+        if self.has_edge()
+
             
         
+class WeightedDiGraph(object):
+    def add_node(self, node):
+        if node in self.nodes:
+            raise Exception('duplicated node')
+        else:
+            self.nodes.add(node)
+            self.edges[node] = {}
+    def add_edge(self, edge):
+        src = edge.get_src()
+        dest = edge.get_dest()
+        weight = edge.get_weight()
+        if src not in self.nodes or dest not in self.nodes:
+            raise Exception('node not in graph')
+        else:
+            self.edges[src][dest] = weight
